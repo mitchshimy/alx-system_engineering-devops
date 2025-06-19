@@ -1,2 +1,2 @@
 #!/bin/bash
-echo "$PATH" | tr ':' '\n' | grep -cv '^$'
+printf "%d\n" "$(echo "$PATH" | tr ':' '\n' | grep -c '[^[:space:]]')"
