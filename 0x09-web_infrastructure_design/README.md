@@ -273,7 +273,110 @@ Set up **dashboards or alerts** when QPS exceeds thresholds.
 - **Risk**: A failure in one service can bring down the others; hard to isolate issues.
 - **Solution**: Keep services **separated by role** for clarity, security, and scalability.
 
+# Clustered and Split Web Infrastructure (Secure & Monitored)
 
+
+- 1 additional server
+- 2 HAProxy load balancers (clustered with VIP)
+- Separated Web, Application, and Database servers
+- Monitoring agents
+- Firewalls
+- SSL certificate for HTTPS
+
+---
+
+## 🧱 Infrastructure Breakdown
+
+| Server # | Role               | Description                            |
+|----------|--------------------|----------------------------------------|
+| 1        | HAProxy Primary LB | Handles incoming HTTPS traffic         |
+| 2        | HAProxy Backup LB  | Standby load balancer with failover    |
+| 3        | Web Server (Nginx) | Serves static files, proxies dynamic   |
+| 4        | Application Server | Processes backend logic                |
+| 5        | Database Server    | Handles persistent data (MySQL)        |
+
+---
+
+## 🧩 Why Each Additional Element Was Added
+
+### ➕ Additional Load Balancer (HAProxy Cluster)
+- Ensures **high availability** — if one LB fails, the other takes over via a **shared Virtual IP (VIP)**.
+- Prevents downtime caused by a single point of failure at the entry point.
+
+### 🧱 Split Components Across Servers
+- Improves **scalability, security, and performance**.
+- Isolates services so each can scale independently and avoid resource contention.
+- Makes maintenance, monitoring, and debugging much easier.
+
+---
+
+## 🔐 Security Measures
+
+### 🔥 Firewalls
+- **Per-server firewalls** restrict access:
+  - Load balancers only accept public HTTPS (port 443)
+  - Web server only accepts connections from LB
+  - App server only from Web
+  - DB server only from App
+- Prevents lateral movement and unauthorized access
+
+### 🔒 HTTPS via SSL Certificate
+- All user traffic is **encrypted** using SSL on HAProxy.
+- Protects against eavesdropping, tampering, and impersonation.
+- Boosts user trust and SEO.
+
+---
+
+## 📊 Monitoring Setup
+
+### 🛠 What Monitoring Is Used For
+- Detect service failures, high load, or poor performance in real time.
+- Provide dashboards for insights (QPS, CPU usage, memory, etc.).
+- Helps forecast resource needs and troubleshoot outages.
+
+### 🛰️ How It Collects Data
+Each server runs a **monitoring agent**, e.g.:
+
+- **SumoLogic / Prometheus / Grafana**
+- Agents collect:
+  - Web server logs (Nginx access/error)
+  - Application latency, error rates
+  - MySQL query metrics, disk I/O
+  - System-level metrics (CPU, RAM, disk)
+
+### 📈 Monitoring Web Server QPS (Queries Per Second)
+To monitor QPS:
+1. Enable Nginx access logging.
+2. Use `nginx_exporter` (Prometheus) or log forwarder (SumoLogic).
+3. Query logs or metrics backend for:
+4. Set up dashboard or alerts if QPS exceeds threshold.
+
+---
+
+## ⚠️ Infrastructure Limitations
+
+### 🚨 SSL Termination at Load Balancer
+- **Problem**: Internal traffic between LB and web server is unencrypted if you terminate SSL at the LB.
+- **Mitigation**:
+- Use **end-to-end encryption** (SSL passthrough)
+- Or re-encrypt traffic between LB → Web/App server
+
+---
+
+### 🚨 Single MySQL Write Node
+- **Problem**: All writes go to one DB server. If it fails, the app cannot write data.
+- **Mitigation**:
+- Use **MySQL replication** with failover
+- Or consider distributed DB solutions like **Galera Cluster**
+
+---
+
+### 🚨 Identical Servers for All Roles (Avoided!)
+- Not an issue in this setup — services are **split**.
+- But for context: when all services run on every server, it becomes:
+- Hard to isolate faults
+- Dangerous in terms of updates (one bug = total failure)
+- Resource-heavy and inefficient
 
 
 
