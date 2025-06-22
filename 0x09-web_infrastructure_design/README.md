@@ -71,5 +71,101 @@ This simple infrastructure is great for small applications or prototypes, but la
 - Scalability
 - Security hardening
 
-Improvements will be addressed in the next stages of this project, including distributed architectures and secured environments.
+
+# Distributed Web Infrastructure
+
+## 🧱 Components Overview
+
+### 🔹 Load Balancer (HAProxy)
+**Why?**  
+To distribute incoming traffic across servers and avoid overloading a single point. Ensures high availability and scalability.
+
+---
+
+### 🔹 Web & Application Server (Nginx + App)
+**Why?**  
+Combines static file serving and dynamic content generation into one server to reduce latency and cost in a small distributed setup.
+
+---
+
+### 🔹 MySQL Database
+**Why?**  
+Stores application data in a structured format and allows persistent storage across sessions.
+
+---
+
+## 🔀 Load Balancer Algorithm
+
+We use the **Round Robin** distribution algorithm.
+
+### 🔁 How it works:
+- Each incoming request is forwarded to the next available backend server in a circular order.
+- This method provides **simple and fair load distribution**, assuming backend servers are equally powerful.
+
+---
+
+## ⚖️ Active-Active vs Active-Passive
+
+### ✅ Active-Active
+- **Multiple servers are online and serving traffic simultaneously**
+- Load is distributed across all servers
+- If one fails, others continue without interruption
+
+### ❌ Active-Passive
+- **One server handles traffic**, others remain on standby
+- If the active one fails, a passive server takes over
+- **Less efficient use of resources**
+
+**This infrastructure uses an _Active-Active_ setup** (web server handles traffic, database is still single-writer though)
+
+---
+
+## 🗃️ Primary-Replica (Master-Slave) Database Cluster
+
+While **not implemented in this current version**, understanding replication is key:
+
+### 🔄 How it works:
+- The **Primary (Master)** handles **write operations**
+- The **Replica (Slave)** handles **read operations** and **replicates changes** from the master in real-time or asynchronously
+
+### 🤝 Application Interaction:
+- **Writes** (e.g., user registration, updates) → go to **Primary**
+- **Reads** (e.g., user profiles, listings) → can go to **Replica** to reduce load
+
+---
+
+## ⚠️ Infrastructure Issues
+
+### 🧨 SPOF (Single Point of Failure)
+- The **database** is still a **SPOF**
+- If the DB fails, the entire app becomes unusable
+
+---
+
+### 🔐 Security Issues
+- **No firewalls**: Open ports can expose servers to attacks
+- **No HTTPS**: Unencrypted traffic is vulnerable to man-in-the-middle (MITM) attacks
+
+---
+
+### 📉 Lack of Monitoring
+- There's no system to:
+  - Track traffic
+  - Detect downtime
+  - Measure resource usage (CPU, RAM, Disk)
+- Makes debugging and scaling decisions much harder
+
+---
+
+## 🧠 Summary
+
+| Component          | Purpose                                  |
+|-------------------|------------------------------------------|
+| HAProxy           | Distributes requests (Round Robin)       |
+| Nginx             | Serves static content / proxies dynamic  |
+| App Server        | Processes logic and DB interaction       |
+| MySQL             | Persistent storage for app data          |
+
+
+
 
