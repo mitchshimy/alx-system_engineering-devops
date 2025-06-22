@@ -166,6 +166,114 @@ While **not implemented in this current version**, understanding replication is 
 | App Server        | Processes logic and DB interaction       |
 | MySQL             | Persistent storage for app data          |
 
+# Secured and Monitored Web Infrastructure
+
+## 🔧 Why Each Additional Element Was Added
+
+### 🔐 SSL Certificate (HTTPS)
+- **Why?** To encrypt all communication between the client and the server, ensuring data confidentiality and protecting against man-in-the-middle attacks.
+
+### 🔥 Firewalls (3 Total)
+- **Why?** To restrict access to only necessary ports and authorized IPs between system components, reducing the attack surface.
+
+### 📊 Monitoring Clients
+- **Why?** To track system health, detect anomalies, and analyze performance metrics for all three servers (Load Balancer, Web/App Server, Database).
+
+---
+
+## 🔥 What Are Firewalls For?
+
+Firewalls act as gatekeepers between networks or services. In this infrastructure, they are used to:
+
+- **Block unauthorized traffic** (e.g., SSH access, irrelevant ports)
+- **Enforce network boundaries** (e.g., DB only accepts traffic from App Server)
+- **Protect internal components from external exposure**
+
+Each server has its own firewall tailored to its function.
+
+---
+
+## 🔒 Why Is the Traffic Served Over HTTPS?
+
+HTTPS provides:
+
+- **End-to-end encryption**, protecting sensitive user data (e.g., login credentials)
+- **Authentication**, ensuring users are connecting to the genuine `foobar.com`
+- **Data integrity**, preventing request/response tampering
+
+It's essential for user trust and compliance with modern web standards.
+
+---
+
+## 🧠 What Is Monitoring Used For?
+
+Monitoring tools serve several critical roles:
+
+- **Real-time visibility** into system performance
+- **Alerting** for failures or anomalies (e.g., high CPU usage, DB downtime)
+- **Historical analysis** for capacity planning and debugging
+- **Security auditing** (e.g., tracking suspicious traffic patterns)
+
+---
+
+## 📡 How the Monitoring Tool Is Collecting Data
+
+Each server runs a **monitoring agent**, such as:
+
+- `SumoLogic`, `Prometheus Node Exporter`, or `Datadog Agent`
+
+These agents:
+
+- Collect metrics like CPU, memory, disk I/O, network usage
+- Scrape logs (e.g., Nginx access/error logs, MySQL slow queries)
+- Send data to a central **monitoring backend or dashboard** over secure channels
+
+---
+
+## 🔍 How to Monitor Web Server QPS (Queries Per Second)
+
+To monitor QPS:
+
+1. **Enable logging** in your web server (Nginx/Apache).
+2. Use a **metrics collector** like:
+   - Prometheus with `nginx_exporter`
+   - SumoLogic log parsing
+3. Query or visualize:
+   - Count the number of requests over time
+   - Example: `rate(http_requests_total[1m])` in Prometheus
+
+Set up **dashboards or alerts** when QPS exceeds thresholds.
+
+---
+
+## ⚠️ Infrastructure Limitations & Issues
+
+### 🚨 Terminating SSL at the Load Balancer Level
+
+- **Problem**: SSL termination (decrypting HTTPS) at HAProxy means internal traffic (to app servers) may be unencrypted.
+- **Risk**: If internal traffic is intercepted (e.g., misconfigured firewalls), sensitive data could leak.
+- **Solution**: Use **end-to-end encryption** (re-encrypt from LB → App) or use **SSL passthrough** mode.
+
+---
+
+### 🚨 Single Write-Capable MySQL Server
+
+- **Problem**: All writes go to one DB server. If it fails, **writes are blocked**, breaking application logic.
+- **Risk**: Downtime and potential data loss if failover is not configured.
+- **Solution**: Use **MySQL replication** with automatic failover, or switch to a clustered DB like Galera.
+
+---
+
+### 🚨 Homogeneous Servers (All-in-One Setup)
+
+- **Problem**: Having each server run **web, app, and DB** logic increases:
+  - **Attack surface**
+  - **Resource contention**
+  - **Configuration complexity**
+- **Risk**: A failure in one service can bring down the others; hard to isolate issues.
+- **Solution**: Keep services **separated by role** for clarity, security, and scalability.
+
+
 
 
 
