@@ -1,9 +1,8 @@
 # Configure ssh client so that you can connect to a server without typing a password.
 
-Host *
-    PasswordAuthentication no
-    IdentifyFile ~/.ssh/school
-    SendEnv LANG LC_*
-    HashKnownHost yes
-    GSSAPIAuthentication yes
-    User ubuntu
+Host alx-server
+  HostName 18.208.150.193
+  User ubuntu
+  IdentityFile ~/.ssh/school
+  PasswordAuthentication no
+
