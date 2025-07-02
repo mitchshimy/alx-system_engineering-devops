@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Configures a new Ubuntu server with a custom HTTP header response
+apt-get -y update
+apt-get -y install nginx
+
+# configure firewall to allow request through port 80
+ufw allow 'Nginx HTTP'
+
+mkdir -p /var/www/html
+
+# change permissions to allow us to easily create files in this directory
+chmod -R 755 /var/www
+
+#  create the index page
+echo 'Hello World!' > /var/www/html/index.nginx-debian.html
+
+# code to configure redirect for 404 error page
+sed -i '/listen 80 default_server;/a add_header X-Served-By $hostname;' /etc/nginx/sites-available/default
+
+# restart the web server after updating the settings
+service nginx restart
