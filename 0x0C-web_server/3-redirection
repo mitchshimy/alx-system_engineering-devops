@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Script to install nginx and configure a 301 redirect for /redirect_me
+
+# Exit on error
+set -e
+
+# Update and install nginx
+apt-get update -y > /dev/null
+apt-get install nginx -y > /dev/null
+
+# Configure redirection in nginx config
+REDIRECT_BLOCK="location /redirect_me {
+    return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+}"
+
+# Insert the redirection block into the default site config
+# Right before the last closing curly brace
+sed -i "/^\s*server\s*{/,/^\s*}/ s/^\s*}/$REDIRECT_BLOCK\n}/" /etc/nginx/sites-available/default
+
+# Restart nginx
+service nginx restart
