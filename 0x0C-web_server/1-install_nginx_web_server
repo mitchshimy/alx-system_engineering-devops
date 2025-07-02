@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
-# Install nginx server
 
-# Update the package list
-apt-get update
+# Exit immediately if a command exits with a non-zero status
+set -e
 
-# Install Nginx
-apt-get -y install nginx
+# Update package list and install nginx
+apt-get update -y
+apt-get install nginx -y
 
-# Configure Nginx to listen on port 80
-sed -i 's/80 default_server/80/g' /etc/nginx/sites-available/default
+# Replace the default index page with "Hello World!"
+echo "Hello World!" > /var/www/html/index.nginx-debian.html
 
-# Create a page with "Hello World!" message
-echo "Hello World!" > /var/www/html/index.html
-
-# Restart Nginx
-service nginx start
+# Restart nginx without using systemctl
+service nginx restart
