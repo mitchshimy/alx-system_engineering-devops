@@ -13,8 +13,8 @@ frontend http_front
 
 backend http_back
         balance roundrobin
-        server 315123-web-01 54.157.188.248 check
-	server 315123-web-02 18.206.208.57 check
+        server 315123-web-01 18.208.150.193 check
+	server 315123-web-02 35.170.191.53 check
 "
 echo "$server_config" >> /etc/haproxy/haproxy.cfg
 
