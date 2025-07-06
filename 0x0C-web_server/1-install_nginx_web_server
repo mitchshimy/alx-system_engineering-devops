@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
-# Script to install nginx and serve a Hello World! page
+# Installs and configures Nginx on an Ubuntu server to serve "Hello World!" on port 80
 
-# Exit on error
+# Exit on any error
 set -e
 
-# Update and install nginx silently
-apt-get update -y > /dev/null
-apt-get install nginx -y > /dev/null
+# Update the package list
+apt-get update -y
+# Install Nginx
+apt-get install nginx -y
 
-# Overwrite the default Nginx index page
-echo "Hello World!" > /var/www/html/index.nginx-debian.html
+# Create a page with "Hello World!" message
+echo "Hello World!" > /var/www/html/index.html
 
-# Restart nginx using service
-service nginx restart
+# Start nginx using service command (not systemctl)
+service nginx start
+-+
