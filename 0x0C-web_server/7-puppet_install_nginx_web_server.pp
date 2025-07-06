@@ -1,28 +1,25 @@
-# 7-puppet_install_nginx_web_server.pp
-# Puppet manifest to install Nginx, serve Hello World, and set up a 301 redirect
+# Script to install nginx using puppet
 
-# Ensure nginx is installed and running
-package { 'nginx':
-  ensure => installed,
+package {'nginx':
+  ensure => 'present',
 }
 
-service { 'nginx':
-  ensure     => running,
-  enable     => true,
-  hasrestart => true,
+exec {'install':
+  command  => 'sudo apt-get update ; sudo apt-get -y install nginx',
+  provider => shell,
+
 }
 
-# Custom index.html with Hello World!
-file { '/var/www/html/index.nginx-debian.html':
-  ensure  => file,
-  content => "Hello World!\n",
-  require => Package['nginx'],
+exec {'Hello':
+  command  => 'echo "Hello World!" | sudo tee /var/www/html/index.html',
+  provider => shell,
 }
 
-# Create custom nginx config with redirect
-file { '/etc/nginx/sites-available/default':
-  ensure  => file,
-  content => template('nginx/default_redirect.erb'),
-  require => Package['nginx'],
-  notify  => Service['nginx'],
+exec {'sudo sed -i "s/listen 80 default_server;/listen 80 default_server;\\n\\tlocation \/redirect_me {\\n\\t\\treturn 301 https:\/\/www.youtube.com\/watch\?v=QH2-TGUlwu4;\\n\\t}/" /etc/nginx/sites-available/default':
+  provider => shell,
+}
+
+exec {'run':
+  command  => 'sudo service nginx restart',
+  provider => shell,
 }
