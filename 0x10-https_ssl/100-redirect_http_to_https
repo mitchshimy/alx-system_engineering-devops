@@ -1,0 +1,31 @@
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    daemon
+    maxconn 2048
+    ssl-default-bind-options no-sslv3
+    ssl-default-bind-ciphers HIGH:!aNULL:!MD5
+
+defaults
+    log     global
+    mode    http
+    option  httplog
+    option  dontlognull
+    timeout connect 5000
+    timeout client  50000
+    timeout server  50000
+
+# HTTP frontend - Redirect to HTTPS
+frontend http-in
+    bind *:80
+    redirect scheme https code 301 if !{ ssl_fc }
+
+# HTTPS frontend - Handle SSL termination
+frontend https-in
+    bind *:443 ssl crt /etc/ssl/private/haproxy.pem
+    mode http
+    default_backend web-backend
+
+backend web-backend
+    mode http
+    server web1 127.0.0.1:80 check
