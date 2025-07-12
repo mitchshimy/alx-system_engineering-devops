@@ -1,29 +1,17 @@
 #!/usr/bin/env bash
-# SC2086 ignored as per project instructions
+# Displays DNS record info for subdomains of a domain
 
-# Function to fetch and display DNS info for a given subdomain
-get_dns_info() {
-  local domain=$1
-  local subdomain=$2
-
-  result=$(dig ${subdomain}.${domain} +short)
-  if [[ -n "$result" ]]; then
-    record_type="A"
-    destination="$result"
-    echo "The subdomain ${subdomain} is a ${record_type} record and points to ${destination}"
-  fi
+# Function to fetch and print record info
+print_domain_subdomain(){
+    dig "$1" | grep -A1 'ANSWER SECTION' | sed -r "s/$1./$2/g" | awk -f"" ' NR==2 { print "The subdomain" $1 "is a "record and points to "$5}'
 }
 
-# Main execution logic
-domain=$1
-sub=$2
-
-# Check if only domain is provided
-if [[ -n "$domain" && -z "$sub" ]]; then
-  get_dns_info $domain www
-  get_dns_info $domain lb-01
-  get_dns_info $domain web-01
-  get_dns_info $domain web-02
-elif [[ -n "$domain" && -n "$sub" ]]; then
-  get_dns_info $domain $sub
+if [ "$#" -eq 2]
+then
+    print_domain_subdomain "$2.$1" "$2"
+else
+    print_domain_subdomain "www.$1" "www"
+    print_domain_subdomain "lb-01.$1 "www"
+    print_domain_subdomain "web-01.$1 "www"
+    print_domain_subdomain "web-02.$1" "www"
 fi
